@@ -7,22 +7,12 @@ namespace BaseSpace
 
     public class SimpleSendBox<T1> : Singleton<T1> where T1 : new()
     {
-
+        protected SimpleSendBox() { }
     }
 
     public class SimpleMail<T1> : Singleton<T1> where T1 : new()
     {
-        public virtual void Register()
-        {
-
-        }
-
-
-        public virtual void Remove()
-        {
-
-        }
-   
+            protected SimpleMail() { }
     }
 
 

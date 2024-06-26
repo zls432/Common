@@ -13,15 +13,15 @@ interface IExecuteable
 
 interface IExecutrable<T1>
 {
-    public void Execute(string id ,T1 t1);
+    public void Execute(string id, T1 t1);
 
 }
-interface IExecutrable<T1,T2>
+interface IExecutrable<T1, T2>
 {
-    public void Execute(string id, T1 t1,T2 t2);
+    public void Execute(string id, T1 t1, T2 t2);
 
 }
-interface IExecutrable<T1, T2, T3> 
+interface IExecutrable<T1, T2, T3>
 {
     public void Execute(string id, T1 t1, T2 t2, T3 t3);
 }
@@ -30,7 +30,7 @@ interface IExecutrable<T1, T2, T3>
 
 
 
-public class SimpleSendBox<T1,T2,T3>:BaseSpace.SimpleSendBox<SimpleSendBox<T1,T2,T3>> 
+public class SimpleSendBox<T1, T2, T3> : BaseSpace.SimpleSendBox<SimpleSendBox<T1, T2, T3>>
 {
 
     public void Push(SimpleLetter<T1, T2, T3> letter)
@@ -39,7 +39,7 @@ public class SimpleSendBox<T1,T2,T3>:BaseSpace.SimpleSendBox<SimpleSendBox<T1,T2
     }
 
 }
-public class SimpleSendBox<T1>:BaseSpace. SimpleSendBox<SimpleSendBox<T1>>
+public class SimpleSendBox<T1> : BaseSpace.SimpleSendBox<SimpleSendBox<T1>>
 {
     public void Push(SimpleLetter<T1> letter)
     {
@@ -49,18 +49,18 @@ public class SimpleSendBox<T1>:BaseSpace. SimpleSendBox<SimpleSendBox<T1>>
 
 }
 
-public class SimpleSendBox<T1,T2> : BaseSpace.SimpleSendBox<SimpleSendBox<T1,T2>>
+public class SimpleSendBox<T1, T2> : BaseSpace.SimpleSendBox<SimpleSendBox<T1, T2>>
 {
-    public void Push(SimpleLetter<T1,T2> letter)
+    public void Push(SimpleLetter<T1, T2> letter)
     {
-        SimpleSender<T1,T2>.Instance.mail.Enqueue(letter);
+        SimpleSender<T1, T2>.Instance.mail.Enqueue(letter);
     }
 }
 
 
 
 
-public class SimpleSendBox : BaseSpace. SimpleSendBox<SimpleSendBox>
+public class SimpleSendBox : BaseSpace.SimpleSendBox<SimpleSendBox>
 {
 
     public void Push(SimpleLetter letter)
@@ -71,7 +71,7 @@ public class SimpleSendBox : BaseSpace. SimpleSendBox<SimpleSendBox>
 }
 
 
-public class SimpleSender: BaseSpace.SimpleSender<SimpleSender>
+public class SimpleSender : BaseSpace.SimpleSender<SimpleSender>
 {
 
     public ConcurrentQueue<SimpleLetter> mail = new ConcurrentQueue<SimpleLetter>();
@@ -97,22 +97,25 @@ public class SimpleSender<T1> : BaseSpace.SimpleSender<SimpleSender<T1>>
         {
             SimpleLetter<T1> tmp;
             if (mail.TryDequeue(out tmp))
-                SimpleMail<T1>.Instance.Execute(tmp.id,tmp.t1);
+            {
+
+                SimpleMail<T1>.Instance.Execute(tmp.id, tmp.t1);
+            }
         }
     }
 }
 
-public class SimpleSender<T1,T2> : BaseSpace.SimpleSender<SimpleSender<T1,T2>>
+public class SimpleSender<T1, T2> : BaseSpace.SimpleSender<SimpleSender<T1, T2>>
 {
-    public ConcurrentQueue<SimpleLetter<T1,T2>> mail = new ConcurrentQueue<SimpleLetter<T1,T2>>();
+    public ConcurrentQueue<SimpleLetter<T1, T2>> mail = new ConcurrentQueue<SimpleLetter<T1, T2>>();
     public override void Update()
     {
 
         while (mail.Count > 0)
         {
-            SimpleLetter<T1,T2> tmp;
+            SimpleLetter<T1, T2> tmp;
             if (mail.TryDequeue(out tmp))
-                SimpleMail<T1,T2>.Instance.Execute(tmp.id, tmp.t1,tmp.t2);
+                SimpleMail<T1, T2>.Instance.Execute(tmp.id, tmp.t1, tmp.t2);
         }
     }
 }
@@ -139,15 +142,15 @@ public class SimpleSender<T1, T2, T3> : BaseSpace.SimpleSender<SimpleSender<T1, 
     }
 }
 
-public class SimpleLetter<T1, T2, T3>: SimpleLetter
+public class SimpleLetter<T1, T2, T3> : SimpleLetter
 {
- 
+
     public T1 t1;
     public T2 t2;
     public T3 t3;
 }
 
-public class SimpleLetter<T1,T2> : SimpleLetter
+public class SimpleLetter<T1, T2> : SimpleLetter
 {
 
     public T1 t1;
@@ -155,7 +158,7 @@ public class SimpleLetter<T1,T2> : SimpleLetter
 }
 
 
-public class SimpleLetter<T1>: SimpleLetter
+public class SimpleLetter<T1> : SimpleLetter
 {
 
     public T1 t1;
@@ -197,7 +200,7 @@ public class SimpleMail<T1, T2, T3, T4, T5, T6, T7, T8> : Singleton<SimpleMail<T
 }
 
 
-public class SimpleMail: BaseSpace.SimpleMail<SimpleMail>, IExecuteable
+public class SimpleMail : BaseSpace.SimpleMail<SimpleMail>, IExecuteable
 {
     Dictionary<string, Action> registered = new Dictionary<string, Action>();
     public override void Init()
@@ -207,16 +210,19 @@ public class SimpleMail: BaseSpace.SimpleMail<SimpleMail>, IExecuteable
 
     public void Execute(string id)
     {
+        Debug.Log("id:"+id);
         registered[id]?.Invoke();
     }
 
     public void Register(string id, Action events)
     {
+
         Action tmp;
         if (!registered.TryGetValue(id, out tmp))
         {
             registered.Add(id, events);
         }
+
     }
 
     public void Remove(string id)
@@ -230,14 +236,17 @@ public class SimpleMail: BaseSpace.SimpleMail<SimpleMail>, IExecuteable
         }
     }
 }
-
-
-public class SimpleMail<T1>: BaseSpace.SimpleMail<SimpleMail<T1>>, IExecutrable<T1>
+public class SimpleMail<T1> : BaseSpace.SimpleMail<SimpleMail<T1>>, IExecutrable<T1>
 {
     Dictionary<string, Action<T1>> registered = new Dictionary<string, Action<T1>>();
     public void Execute(string id, T1 t1)
     {
-        registered[id]?.Invoke(t1);
+        if (registered.ContainsKey(id))
+        {
+            registered[id]?.Invoke(t1);
+        }
+        else
+            SwqLog.LogError("not have this key:" + id);
     }
 
     public void Register(string id, Action<T1> events)
@@ -247,6 +256,7 @@ public class SimpleMail<T1>: BaseSpace.SimpleMail<SimpleMail<T1>>, IExecutrable<
         {
             registered.Add(id, events);
         }
+
     }
 
     public void Remove(string id)
@@ -261,34 +271,35 @@ public class SimpleMail<T1>: BaseSpace.SimpleMail<SimpleMail<T1>>, IExecutrable<
     }
 }
 
-public class SimpleMail<T1,T2> : BaseSpace.SimpleMail<SimpleMail<T1,T2>>, IExecutrable<T1,T2>
+public class SimpleMail<T1, T2> : BaseSpace.SimpleMail<SimpleMail<T1, T2>>, IExecutrable<T1, T2>
 {
-    Dictionary<string, Action<T1,T2>> registered = new Dictionary<string, Action<T1,T2>>();
+    Dictionary<string, Action<T1, T2>> registered = new Dictionary<string, Action<T1, T2>>();
 
 
     public void Execute(string id, T1 t1, T2 t2)
     {
-        registered[id]?.Invoke(t1,t2);
+        registered[id]?.Invoke(t1, t2);
     }
 
-    public void Register(string id, Action<T1,T2> events)
+    public void Register(string id, Action<T1, T2> events)
     {
-
 
         Action<T1, T2> tmp;
         if (!registered.TryGetValue(id, out tmp))
         {
             registered.Add(id, events);
+            SwqLog.LogError("Regiseter succes:" + id);
         }
         else
         {
             SwqLog.LogError("Regiseter Failed:" + id);
         }
+
     }
 
     public void Remove(string id)
     {
-        Action<T1,T2> tmp;
+        Action<T1, T2> tmp;
         if (registered.TryGetValue(id, out tmp))
             registered.Remove(id);
         else
@@ -301,9 +312,9 @@ public class SimpleMail<T1,T2> : BaseSpace.SimpleMail<SimpleMail<T1,T2>>, IExecu
 
 
 
-public class SimpleMail<T1, T2, T3> : BaseSpace .SimpleMail<SimpleMail<T1, T2, T3>>, IExecutrable<T1, T2, T3>
+public class SimpleMail<T1, T2, T3> : BaseSpace.SimpleMail<SimpleMail<T1, T2, T3>>, IExecutrable<T1, T2, T3>
 {
- 
+
     Dictionary<string, Action<T1, T2, T3>> registered = new Dictionary<string, Action<T1, T2, T3>>();
     public override void Init()
     {
@@ -312,10 +323,8 @@ public class SimpleMail<T1, T2, T3> : BaseSpace .SimpleMail<SimpleMail<T1, T2, T
 
     public void Execute(string id, T1 t1, T2 t2, T3 t3)
     {
-        SwqLog.Log("Mail Id:  "+id);
-        SwqLog.Log("Mail object:  " + registered[id]);
         if (registered[id] == null)
-            Debug.Log("Registered is Null");
+            Debug.Log("Registered is Null   " + id);
         registered[id]?.Invoke(t1, t2, t3);
     }
 
@@ -326,7 +335,7 @@ public class SimpleMail<T1, T2, T3> : BaseSpace .SimpleMail<SimpleMail<T1, T2, T
 
     public void Register(string id, Action<T1, T2, T3> events)
     {
-        Debug.Log("register ID: "+ id +"     register action:"+events);
+        Debug.Log("register ID: " + id + "     register action:" + events);
         Action<T1, T2, T3> tmp;
         if (!registered.TryGetValue(id, out tmp))
         {
@@ -336,6 +345,7 @@ public class SimpleMail<T1, T2, T3> : BaseSpace .SimpleMail<SimpleMail<T1, T2, T
         {
             SwqLog.LogError("Regiseter Failed:" + id);
         }
+
     }
 
     public void Remove(string id)

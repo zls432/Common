@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using BaseSpace;
-public class LogManager :Singleton<LogManager>
+public class LogManager :BaseSpace.Singleton<LogManager>
 {
 
     public override void Init()

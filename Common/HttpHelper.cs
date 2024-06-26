@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 using BaseSpace;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Policy;
 
 namespace InternelSDK
 {
@@ -23,6 +26,7 @@ namespace InternelSDK
         public async Task ResumeDownload(string url, string localPath, bool isOverWrite = true, Action callback = null)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            TurnToHttpsProtoal(url, request);
             request.Method = "GET";
             FileInfo localFile = new FileInfo(localPath);
             long startPosition = 0;
@@ -77,6 +81,7 @@ namespace InternelSDK
             try
             {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                TurnToHttpsProtoal(url, request);
                 request.Method = "GET";
 
                 long startPosition = 0;
@@ -122,7 +127,11 @@ namespace InternelSDK
             }
             try
             {
+
+                
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+                TurnToHttpsProtoal(url, request);
                 request.Method = "GET";
                 // 发送请求，获取服务器响应
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
@@ -135,10 +144,11 @@ namespace InternelSDK
                 }
 
                 return result;
-       
+ 
             }
             catch (Exception e)
             {
+                Debug.LogError(e.ToString());
                 httpLogError?.Invoke(e.ToString());
                 return null;
             }
@@ -181,6 +191,7 @@ namespace InternelSDK
         public async Task<HttpWebRequest> GenerateRequest(string url, byte[] jsonData)
         {
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(url);
+            TurnToHttpsProtoal(url, webRequest);
             webRequest.Method = "POST";
             webRequest.Timeout = 800;
             webRequest.ContentType = "application/json";
@@ -215,6 +226,7 @@ namespace InternelSDK
         public async Task<string> PostJsonAsyncs(string url, byte[] jsonData)
         {
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(url);
+            TurnToHttpsProtoal(url, webRequest);
             webRequest.Method = "POST";
             webRequest.Timeout = 800;
             webRequest.ContentType = "application/json";
@@ -305,6 +317,7 @@ namespace InternelSDK
             return result;
         }
 
+
         public Encoding GetResposeEncoding(HttpWebResponse response)
         {
             Encoding encoding = Encoding.UTF8;
@@ -331,7 +344,27 @@ namespace InternelSDK
         }
         private const string PlayStoreUrl = "https://play.google.com/store/apps/details?id={0}";//谷歌商店
         private const string AppStoreUrl = "https://itunes.apple.com/app/apple-store/id{0}";//苹果应用商店  
+
+        void TurnToHttpsProtoal(string url, HttpWebRequest request)
+        {
+            if (url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+            {
+                ServicePointManager.ServerCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors) => true;
+                request.ProtocolVersion = HttpVersion.Version11;
+                // 这里设置了协议类型。
+                ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;// SecurityProtocolType.Tls1.2; 
+                request.KeepAlive = false;
+                ServicePointManager.CheckCertificateRevocationList = true;
+                ServicePointManager.DefaultConnectionLimit = 100;
+                ServicePointManager.Expect100Continue = false;
+                //request.ContentType = "application/x-www-form-urlencoded";
+                //request.AllowAutoRedirect = true;
+                request.UserAgent = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2; .NET CLR 1.1.4322; .NET CLR 2.0.50727)";
+                //request.Accept = "*/*";
+            }
+        }
     }
+
 
     //string BuildQuery()
     //{
