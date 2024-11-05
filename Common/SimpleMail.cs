@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
 using BaseSpace;
-using OppoAds;
+
 
 interface IExecuteable
 {
@@ -246,7 +246,7 @@ public class SimpleMail<T1> : BaseSpace.SimpleMail<SimpleMail<T1>>, IExecutrable
             registered[id]?.Invoke(t1);
         }
         else
-            SwqLog.LogError("not have this key:" + id);
+            CustomLog.LogError("not have this key:" + id);
     }
 
     public void Register(string id, Action<T1> events)
@@ -288,11 +288,11 @@ public class SimpleMail<T1, T2> : BaseSpace.SimpleMail<SimpleMail<T1, T2>>, IExe
         if (!registered.TryGetValue(id, out tmp))
         {
             registered.Add(id, events);
-            SwqLog.LogError("Regiseter succes:" + id);
+            CustomLog.LogError("Regiseter succes:" + id);
         }
         else
         {
-            SwqLog.LogError("Regiseter Failed:" + id);
+            CustomLog.LogError("Regiseter Failed:" + id);
         }
 
     }
@@ -343,7 +343,7 @@ public class SimpleMail<T1, T2, T3> : BaseSpace.SimpleMail<SimpleMail<T1, T2, T3
         }
         else
         {
-            SwqLog.LogError("Regiseter Failed:" + id);
+            CustomLog.LogError("Regiseter Failed:" + id);
         }
 
     }

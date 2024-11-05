@@ -12,9 +12,9 @@ public class LogManager :BaseSpace.Singleton<LogManager>
         HttpHelper.Instance.httpLogWarning = Debug.LogWarning;
         HttpHelper.Instance.httpLogError = Debug.LogError;
 
-        SwqLog.swqLog = Debug.Log;
-        SwqLog.swqLogWaring = Debug.LogWarning;
-        SwqLog.swqLogError = Debug.LogError;
+        CustomLog.RegisterLogD(Debug.Log);
+        CustomLog.RegisterLogWaring(Debug.LogWarning);
+        CustomLog.RegisterLogError(Debug.LogError);
     }
     // Start is called before the first frame update
     void Start()
