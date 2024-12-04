@@ -16,6 +16,12 @@ public class WebSocketSingletonHelper : Singleton<WebSocketSingletonHelper>, IDi
     ClientWebSocket ws;
     public WebSocketState? State { get => ws?.State; }
     public string socket = "ws://115.29.206.36:30590/websocket";
+    public LinkedList<byte> StraemData {
+        get { return streamData; }
+    }
+    public ClientWebSocket Ws => ws;
+
+    public Action closeCallBack;
 
     CancellationToken cancelToken;
     public CancellationToken CancelToken
@@ -83,25 +89,26 @@ public class WebSocketSingletonHelper : Singleton<WebSocketSingletonHelper>, IDi
     {
         while (true)
         {
-            Memory<byte> cahce = new Memory<byte>();
+            Memory<byte> cahce = new Memory<byte>(new byte[65535]);
             ValueWebSocketReceiveResult result;
             try
             {
                 result = await ws.ReceiveAsync(cahce, CancellationToken.None);
+                CustomLog.Log("ResultMessageResult:" + result.Count);
             }
             catch (Exception ex)
             {
                 CustomLog.LogError(ex.ToString());
-                await CreatWebSocket(socket);
                 break;
             }
             if (result.MessageType != WebSocketMessageType.Close)
             {
-                streamData.AddRange(cahce.ToArray());
+                streamData.AddRange(cahce.Slice(0, result.Count).ToArray());
             }
             else
             {
                 CustomLog.LogError("接收到close信息");
+                closeCallBack?.Invoke();
             }
         }
     }
@@ -118,10 +125,13 @@ public class WebSocketSingletonHelper : Singleton<WebSocketSingletonHelper>, IDi
         sendCancel = new CancellationTokenSource();
         Task.Run(() =>
         {
-            byte[] data;
-            if (messageQueue.TryDequeue(out data))
+            while (true)
             {
-                Send(data);
+                byte[] data;
+                if (messageQueue.TryDequeue(out data))
+                {
+                    bool result =  Send(data);
+                }
             }
         }, sendCancel.Token);
     }
@@ -178,7 +188,10 @@ public class WebSocketSingletonHelper : Singleton<WebSocketSingletonHelper>, IDi
     public void Close()
     {
         isUserClose = true;
+        reciveCancel.Cancel();
+        sendCancel.Cancel();
         Close(WebSocketCloseStatus.NormalClosure, "用户手动关闭");
+
     }
 
     public void Close(WebSocketCloseStatus closeStatus, string statusDescription)
@@ -194,10 +207,8 @@ public class WebSocketSingletonHelper : Singleton<WebSocketSingletonHelper>, IDi
             {
                 CustomLog.LogError("CloseException:" + ex.ToString());
             }
-
             ws.Abort();
             ws.Dispose();
-
             //if (OnClose != null)
             //    OnClose(ws, new EventArgs());
         });

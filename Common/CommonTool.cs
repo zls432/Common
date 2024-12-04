@@ -44,4 +44,15 @@ public static class CommonTool
             return false;
         }
     }
+
+    public static short ByteToShort(byte[] bytes)
+    {
+        return BitConverter.ToInt16(bytes, 0);
+    }
+
+    public static short ReversalByteToUShort(byte[] bytes) 
+    {
+        short shortValue = (short)((bytes[0] << 8) | bytes[1]);
+        return shortValue;
+    }
 }

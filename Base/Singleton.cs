@@ -5,7 +5,7 @@ namespace BaseSpace
 {
     public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
-        private static T _instance;
+        protected static T _instance;
         private static object _lock = new object();
         public static T Instance
         {
@@ -28,6 +28,11 @@ namespace BaseSpace
                 }
             }
         }
+        public void Awake()
+        {
+
+        }
+
         private static bool applicationIsQuitting = false;
         public void OnDestroy()
         {

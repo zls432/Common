@@ -24,8 +24,8 @@ public class GlobalTable<T> : Singleton<GlobalTable<T>>
     Dictionary<String, List<Action<T>>> actionTable = new Dictionary<string, List<Action<T>>>();
     public void BindDate(String id, Action<T> action)
     {
-        List<Action< T>> cahceActions;
-        if (!actionTable.TryGetValue (id, out cahceActions))
+        List<Action<T>> cahceActions;
+        if (!actionTable.TryGetValue(id, out cahceActions))
             actionTable[id] = new List<Action<T>>();
         actionTable[id].Add(action);
     }
@@ -42,13 +42,7 @@ public class GlobalTable<T> : Singleton<GlobalTable<T>>
             if (cahce.owner == owner)
             {
                 cahce.value = value;
-                List<Action<T>> actionCahce;
-                actionTable.TryGetValue(id,out actionCahce);
-                if (actionCahce != null)
-                foreach(var item in    actionCahce)
-                {
-                        item?.Invoke(value);
-                }
+
             }
             else
             {
@@ -59,6 +53,14 @@ public class GlobalTable<T> : Singleton<GlobalTable<T>>
         {
             table[id] = new TableDate<T>(value, owner);
         }
+
+        List<Action<T>> actionCahce;
+        actionTable.TryGetValue(id, out actionCahce);
+        if (actionCahce != null&& actionCahce.Count>0)
+            foreach (var item in actionCahce)
+            {
+                item?.Invoke(value);
+            }
     }
 
     public T GetValue(string id)
@@ -68,6 +70,21 @@ public class GlobalTable<T> : Singleton<GlobalTable<T>>
         {
             return cahce.value;
         }
-        throw new Exception("GlobalTable does not have this key.");
+        throw new Exception($"GlobalTable does not have  key:{id}.");
+    }
+    public bool TryGetValue(string id ,out T t)
+    {
+        TableDate<T> cahce;
+        if (table.TryGetValue(id, out cahce))
+        {
+            t = cahce.value;
+            return true;
+        }
+        else
+        {
+            t = default(T);
+            return false;
+        }
+        throw new Exception($"GlobalTable does not have  key:{id}.");
     }
 }

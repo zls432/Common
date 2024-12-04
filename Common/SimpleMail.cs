@@ -236,7 +236,12 @@ public partial class SimpleMailManager : Singleton<SimpleMailManager>
             item.Update();
         }
     }
-
+    public void SendLetter( string id)
+    {
+        SimpleLetter simpleLetter = new SimpleLetter();
+        simpleLetter.id = id;
+        SimpleSendBox.Instance.Push(simpleLetter);
+    }
 
     public void SendLetter<T>(T t1,string id)
     {
